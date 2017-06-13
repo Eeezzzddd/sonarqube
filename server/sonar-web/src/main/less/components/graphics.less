@@ -114,12 +114,44 @@
   fill: none;
   stroke: @blue;
   stroke-width: 2px;
+
+  &.line-chart-path-1 {
+    stroke: @darkBlue
+  }
+
+  &.line-chart-path-2 {
+    stroke: #26adff
+  }
 }
 
 .line-chart-point {
   fill: #fff;
   stroke: @darkBlue;
   stroke-width: 2px;
+}
+
+.line-chart-event {
+  fill: #fff;
+  stroke: @darkBlue;
+  stroke-width: 2px;
+  transform: rotate(45deg);
+  transform-origin: 50% 50%;
+
+  &.VERSION {
+    stroke: @green;
+  }
+
+  &.QUALITY_GATE {
+    stroke: @blue;
+  }
+
+  &.QUALITY_PROFILE {
+    stroke: @orange;
+  }
+
+  &.OTHER {
+    stroke: @purple;
+  }
 }
 
 .line-chart-backdrop {

@@ -1,3 +1,29 @@
+.project-activity-page-side-outer {
+  width: 400px;
+  min-height: 500px;
+  height: calc(100vh - 240px);
+  overflow: auto;
+}
+
+.project-activity-page-side-outer .boxed-group {
+  margin-bottom: 0;
+}
+
+.project-activity-layout-page-main {
+  flex-grow: 1;
+  min-width: 640px;
+  padding-left: 20px;
+}
+
+.project-activity-layout-page-main-inner {
+  min-width: 640px;
+  max-width: 880px
+}
+
+.project-activity-list {
+  max-width: 400px;
+}
+
 .project-activity-days-list {}
 
 .project-activity-day {

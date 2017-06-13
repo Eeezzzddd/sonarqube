@@ -23,18 +23,21 @@ import type { Query } from './types';
 import type { RawQuery } from '../../helpers/query';
 
 export const parseQuery = (urlQuery: RawQuery): Query => ({
-  project: parseAsString(urlQuery['id']),
-  category: parseAsString(urlQuery['category'])
+  category: parseAsString(urlQuery['category']),
+  graph: parseAsString(urlQuery['graph']),
+  project: parseAsString(urlQuery['id'])
 });
 
-export const serializeQuery = (query: Query): Query =>
+export const serializeQuery = (query: Query): RawQuery =>
   cleanQuery({
-    project: serializeString(query.project),
-    category: serializeString(query.category)
+    category: serializeString(query.category),
+    graph: serializeString(query.graph),
+    project: serializeString(query.project)
   });
 
 export const serializeUrlQuery = (query: Query): RawQuery =>
   cleanQuery({
-    id: serializeString(query.project),
-    category: serializeString(query.category)
+    category: serializeString(query.category),
+    graph: serializeString(query.graph),
+    id: serializeString(query.project)
   });

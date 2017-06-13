@@ -25,32 +25,34 @@ import type { RawQuery } from '../../../helpers/query';
 
 type Props = {
   updateQuery: RawQuery => void,
-  category?: string
+  graph: string
 };
 
-export default class ProjectActivityPageHeader extends React.PureComponent {
+export default class ProjectActivityGraphsHeader extends React.PureComponent {
   props: Props;
 
-  handleCategoryChange = (option: ?{ value: string }) => {
-    this.props.updateQuery({ category: option ? option.value : '' });
+  handleGraphChange = (option: { value: string }) => {
+    const graph = option.value === 'overview' ? '' : option.value;
+    if (graph !== this.props.graph) {
+      this.props.updateQuery({ graph });
+    }
   };
 
   render() {
-    const selectOptions = ['VERSION', 'QUALITY_GATE', 'QUALITY_PROFILE', 'OTHER'].map(category => ({
-      label: translate('event.category', category),
-      value: category
+    const selectOptions = ['overview'].map(graph => ({
+      label: translate('project-activity.graphs.', graph),
+      value: graph
     }));
 
     return (
       <header className="page-header">
         <Select
           className="input-medium"
-          placeholder={translate('project_activity.filter_events') + '...'}
-          clearable={true}
+          clearable={false}
           searchable={false}
-          value={this.props.category}
+          value={this.props.graph || 'overview'}
           options={selectOptions}
-          onChange={this.handleCategoryChange}
+          onChange={this.handleGraphChange}
         />
       </header>
     );

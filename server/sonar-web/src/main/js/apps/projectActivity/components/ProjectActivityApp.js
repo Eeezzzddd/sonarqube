@@ -20,16 +20,18 @@
 // @flow
 import React from 'react';
 import Helmet from 'react-helmet';
+import moment from 'moment';
 import ProjectActivityPageHeader from './ProjectActivityPageHeader';
 import ProjectActivityAnalysesList from './ProjectActivityAnalysesList';
-import ProjectActivityPageFooter from './ProjectActivityPageFooter';
+import ProjectActivityGraphs from './ProjectActivityGraphs';
 import throwGlobalError from '../../../app/utils/throwGlobalError';
 import * as api from '../../../api/projectActivity';
 import * as actions from '../actions';
+import { getTimeMachineData } from '../../../api/time-machine';
 import { parseQuery, serializeQuery, serializeUrlQuery } from '../utils';
 import { translate } from '../../../helpers/l10n';
 import './projectActivity.css';
-import type { Analysis, Query, Paging } from '../types';
+import type { Analysis, MetricHistory, Query, Paging } from '../types';
 import type { RawQuery } from '../../../helpers/query';
 
 type Props = {
@@ -41,6 +43,7 @@ type Props = {
 export type State = {
   analyses: Array<Analysis>,
   loading: boolean,
+  metricsHistory: Array<MetricHistory>,
   paging?: Paging,
   query: Query
 };
@@ -52,7 +55,12 @@ export default class ProjectActivityApp extends React.PureComponent {
 
   constructor(props: Props) {
     super(props);
-    this.state = { analyses: [], loading: true, query: parseQuery(props.location.query) };
+    this.state = {
+      analyses: [],
+      loading: true,
+      metricsHistory: [],
+      query: parseQuery(props.location.query)
+    };
   }
 
   componentDidMount() {
@@ -84,6 +92,19 @@ export default class ProjectActivityApp extends React.PureComponent {
     };
     return api.getProjectActivity(parameters).catch(throwGlobalError);
   };
+
+  fetchMetricHistory = (metrics: Array<string>): Promise<Array<MetricHistory>> =>
+    getTimeMachineData(this.props.project.key, metrics)
+      .then(({ measures }) =>
+        measures.map(measure => ({
+          metric: measure.metric,
+          history: measure.history.map(analysis => ({
+            date: moment(analysis.date).toDate(),
+            value: analysis.value
+          }))
+        }))
+      )
+      .catch(throwGlobalError);
 
   fetchMoreActivity = () => {
     const { paging, query } = this.state;
@@ -139,12 +160,16 @@ export default class ProjectActivityApp extends React.PureComponent {
   handleQueryChange() {
     const query = parseQuery(this.props.location.query);
     this.setState({ loading: true, query });
-    this.fetchActivity(query).then(({ analyses, paging }) => {
+    Promise.all([
+      this.fetchActivity(query),
+      this.fetchMetricHistory(['bugs', 'vulnerabilities', 'code_smells'])
+    ]).then(response => {
       if (this.mounted) {
         this.setState({
-          analyses,
+          analyses: response[0].analyses,
           loading: false,
-          paging
+          metricsHistory: response[1],
+          paging: response[0].paging
         });
       }
     });
@@ -174,21 +199,28 @@ export default class ProjectActivityApp extends React.PureComponent {
 
         <ProjectActivityPageHeader category={query.category} updateQuery={this.updateQuery} />
 
-        <ProjectActivityAnalysesList
-          addCustomEvent={this.addCustomEvent}
-          addVersion={this.addVersion}
-          analyses={this.state.analyses}
-          canAdmin={canAdmin}
-          changeEvent={this.changeEvent}
-          deleteAnalysis={this.deleteAnalysis}
-          deleteEvent={this.deleteEvent}
-        />
+        <div className="layout-page">
+          <ProjectActivityAnalysesList
+            addCustomEvent={this.addCustomEvent}
+            addVersion={this.addVersion}
+            analyses={this.state.analyses}
+            canAdmin={canAdmin}
+            changeEvent={this.changeEvent}
+            deleteAnalysis={this.deleteAnalysis}
+            deleteEvent={this.deleteEvent}
+            fetchMoreActivity={this.fetchMoreActivity}
+            paging={this.state.paging}
+          />
 
-        <ProjectActivityPageFooter
-          analyses={this.state.analyses}
-          fetchMoreActivity={this.fetchMoreActivity}
-          paging={this.state.paging}
-        />
+          <ProjectActivityGraphs
+            analyses={this.state.analyses}
+            metricsHistory={this.state.metricsHistory}
+            mectricsType="INT"
+            project={this.props.project.key}
+            query={query}
+            updateQuery={this.updateQuery}
+          />
+        </div>
       </div>
     );
   }

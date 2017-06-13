@@ -32,6 +32,10 @@ export type Analysis = {
   events: Array<Event>
 };
 
+export type HistoryItem = { date: Date, value: string };
+
+export type MetricHistory = { metric: string, history: Array<HistoryItem> };
+
 export type Paging = {
   pageIndex: number,
   pageSize: number,
@@ -39,6 +43,7 @@ export type Paging = {
 };
 
 export type Query = {
-  project: string,
-  category: string
+  category: string,
+  graph: string,
+  project: string
 };
